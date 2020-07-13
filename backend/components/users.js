@@ -5,13 +5,12 @@ const jwtStrategy = require("../middlewares/passportJWT");
 const basicStrategy = require("../middlewares/passportBasic");
 const jwt = require("jsonwebtoken");
 const jwtSecretKey = require("../secretKey.json");
-const { get } = require("../models/usersModel");
 
 // Create tables
 
-user
-  .createTableUsers()
-  .then(user.createTableStations().then(user.createTableCharging()));
+(async () => await user.createTableUsers())();
+(async () => await user.createTableStations())();
+(async () => await user.createTableCharging())();
 
 router.get("/:id?", function (req, res, next) {
   if (req.params.id) {

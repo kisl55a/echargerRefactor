@@ -8,6 +8,7 @@ var station = {
       .then((data) => callback.then(data))
       .catch((err) => callback.catch(err));
   },
+
   insertData: async function (callback) {
     let stationsInfo = await knex("stations").select();
     if (stationsInfo.length == 0) {

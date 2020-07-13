@@ -115,9 +115,7 @@ export default class App extends Component {
           stationName.toLowerCase().indexOf(value.toLowerCase()) >= 0
       ),
     });
-    // this.setState({ arr : this.state.arr.length = 5})
     this.setState({ currentMarker: {} });
-    // ( this.state.arr.length != 0) ? this.setState( {showSearchResults: true}) : this.setState( {showSearchResults: false})
   };
 
   setCurrentStation = async (currentStation) => {
@@ -140,7 +138,6 @@ export default class App extends Component {
 
 	  }
 	let frequency = 5;
-	console.log("chargId: ", this.state.idCharging )
     axios
       .put(
         `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/chargingProcess/${this.state.idCharging}`,

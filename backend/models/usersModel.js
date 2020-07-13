@@ -2,7 +2,7 @@ var knex = require("../database/database");
 const passwordHash = require("password-hash");
 var user = {
   createTableUsers: async () => {
-    knex.schema.hasTable("users").then(function (exists) {
+    await knex.schema.hasTable("users").then(function (exists) {
       if (!exists) {
         return knex.schema.createTable("users", function (t) {
           t.increments("idUser").primary();
@@ -22,7 +22,7 @@ var user = {
     });
   },
   createTableCharging: async () => {
-    knex.schema.hasTable("charging").then(function (exists) {
+    await knex.schema.hasTable("charging").then(function (exists) {
       if (!exists) {
         return knex.schema.createTable("charging", function (t) {
           t.increments("idCharging").primary();
@@ -50,14 +50,14 @@ var user = {
     });
   },
   createTableStations: async () => {
-    knex.schema.hasTable("stations").then(function (exists) {
+    await knex.schema.hasTable("stations").then(function (exists) {
       if (!exists) {
         return knex.schema.createTable("stations", function (t) {
           t.increments("stationId").primary();
           t.string("stationName", 100).notNullable();
           t.string("address", 100).notNullable();
-          t.float("lat", 50).notNullable();
-          t.float("lng", 50).notNullable();
+          t.float("lat", 50, 5).notNullable();
+          t.float("lng", 50, 5).notNullable();
           t.string("type", 40).notNullable();
           t.float("power", 10, 5).notNullable();
           t.float("price", 10, 3).notNullable();

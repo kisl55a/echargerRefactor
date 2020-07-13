@@ -5,15 +5,6 @@ const jwtStrategy = require("../middlewares/passportJWT");
 
 // Create tables
 
-station.insertData({
-  then: (rows) => {
-    console.log(rows);
-  },
-  catch: (err) => {
-    console.log(err);
-  },
-});
-
 router.get("/getAllStations", function (req, res, next) {
   station.getAllStations({
     then: (rows) => {
@@ -21,6 +12,17 @@ router.get("/getAllStations", function (req, res, next) {
     },
     catch: (err) => {
       res.status(500).json({ code: 1, err });
+    },
+  });
+});
+
+router.post("/insertData", function (req, res, next) {
+  station.insertData({
+    then: (rows) => {
+      res.status(202).json({ code: 1, rows });
+    },
+    catch: (err) => {
+      res.status(202).json({ code: 1, err });
     },
   });
 });
