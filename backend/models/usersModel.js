@@ -118,7 +118,8 @@ var user = {
         "stations.type",
         "charging.energy",
         "charging.timeOfStart",
-        "stations.UUID"
+        "stations.UUID",
+        "charging.cost"
       )
       .from("charging")
       .innerJoin("stations", "charging.stationId", "stations.stationId")

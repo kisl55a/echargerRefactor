@@ -2,6 +2,12 @@ var knex = require("../database/database");
 const { data } = require("../database/data");
 
 var station = {
+  getAllStations: async function (callback) {
+    return knex("stations")
+      .select()
+      .then((data) => callback.then(data))
+      .catch((err) => callback.catch(err));
+  },
   insertData: async function (callback) {
     let stationsInfo = await knex("stations").select();
     if (stationsInfo.length == 0) {

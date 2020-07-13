@@ -1,12 +1,7 @@
 var express = require("express");
 var router = express.Router();
-var user = require("../models/usersModel");
 let station = require("../models/stationsModel");
 const jwtStrategy = require("../middlewares/passportJWT");
-const basicStrategy = require("../middlewares/passportBasic");
-const jwt = require("jsonwebtoken");
-const jwtSecretKey = require("../secretKey.json");
-const passport = require("passport");
 
 // Create tables
 
@@ -17,6 +12,17 @@ station.insertData({
   catch: (err) => {
     console.log(err);
   },
+});
+
+router.get("/getAllStations", function (req, res, next) {
+  station.getAllStations({
+    then: (rows) => {
+      res.status(202).json({ code: 1, rows });
+    },
+    catch: (err) => {
+      res.status(500).json({ code: 1, err });
+    },
+  });
 });
 
 router.post(
