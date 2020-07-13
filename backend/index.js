@@ -9,10 +9,10 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const userComponent = require("./components/users");
-// const stationComponent = require("./components/stations");
+const stationComponent = require("./components/stations");
 
 app.use("/v1/users", userComponent);
-// app.use("/stations", stations);
+app.use("/v1/stations", stationComponent);
 
 app.listen(PORT, () => {
   console.log(`Listening to the port ${PORT}`);

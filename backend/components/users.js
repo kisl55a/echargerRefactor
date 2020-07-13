@@ -5,6 +5,7 @@ const jwtStrategy = require("../middlewares/passportJWT");
 const basicStrategy = require("../middlewares/passportBasic");
 const jwt = require("jsonwebtoken");
 const jwtSecretKey = require("../secretKey.json");
+const { get } = require("../models/usersModel");
 
 // Create tables
 
@@ -49,8 +50,13 @@ router.post(
   "/login",
   basicStrategy.authenticate("basic", { session: false }),
   async function (req, res, next) {
+    let userInfo;
+    await user.getUserByName(req.user.username, {
+      then: (rows) => (userInfo = rows),
+      catch: (err) => console.log(err),
+    });
     const response = {
-      id: req.user.id,
+      id: userInfo.idUser,
       username: req.user.username,
     };
     const payload = {
@@ -63,26 +69,19 @@ router.post(
     return res.json({ token });
   }
 );
-
-router.delete("/:id", function (req, res, next) {
-  user.delete(req.params.id, {
-    then: (rows) => {
-      res.status(202).json({ code: 1, rows });
-    },
-    catch: (err) => {
-      res.status(500).json({ code: 0, err });
-    },
-  });
-});
-router.put("/:id", function (req, res, next) {
-  user.update(req.params.id, req.body, {
-    then: (rows) => {
-      res.status(202).json({ code: 1, rows });
-    },
-    catch: (err) => {
-      res.status(500).json({ code: 0, err });
-    },
-  });
-});
+router.get(
+  "/history/userHistory",
+  jwtStrategy.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    user.history(req.user.id, {
+      then: (rows) => {
+        res.status(202).json({ code: 1, rows });
+      },
+      catch: (err) => {
+        res.status(500).json({ code: 0, err });
+      },
+    });
+  }
+);
 
 module.exports = router;

@@ -41,6 +41,7 @@ var user = {
             .defaultTo(knex.raw("CURRENT_TIMESTAMP"));
           t.integer("timeOfUsage", 10).notNullable();
           t.float("cost", 10, 3).notNullable();
+          t.float("energy", 10, 3).notNullable();
           t.string("measure").notNullable();
         });
       } else {
@@ -69,18 +70,6 @@ var user = {
       }
     });
   },
-
-  get: async function (callback) {
-    return knex
-      .from("users")
-      .select("*")
-      .then((data) => {
-        callback.then(data);
-      })
-      .catch((err) => {
-        callback.catch(err);
-      });
-  },
   getUserByName: async function (username, callback) {
     return knex
       .from("users")
@@ -95,13 +84,11 @@ var user = {
   },
 
   getById: async function (id, callback) {
-    console.log(id);
     return knex
       .from("users")
       .select()
       .where("idUser", id)
       .then((data) => {
-        // console.log(data);
         callback.then(data);
       })
       .catch((err) => {
@@ -110,7 +97,6 @@ var user = {
   },
 
   add: async function (user, callback) {
-    // console.log(user);
     let hashedPassword = await passwordHash.generate(user.password);
     return knex("users")
       .insert([{ ...user, password: hashedPassword }])
@@ -121,6 +107,24 @@ var user = {
         callback.catch(err);
         console.log(err);
       });
+  },
+
+  history: async function (idUser, callback) {
+    console.log("idUser: ", idUser);
+    return knex()
+      .select(
+        "charging.idCharging",
+        "charging.timeOfUsage",
+        "stations.type",
+        "charging.energy",
+        "charging.timeOfStart",
+        "stations.UUID"
+      )
+      .from("charging")
+      .innerJoin("stations", "charging.stationId", "stations.stationId")
+      .where("idUser", idUser)
+      .then((data) => callback.then(data))
+      .catch((err) => callback.catch(err));
   },
 };
 module.exports = user;
