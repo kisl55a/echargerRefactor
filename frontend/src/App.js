@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Registration from "./components/Registration";
 import StationInfo from "./components/StationInfo";
 import Profile from "./components/Profile";
+import Loader from "react-loader-spinner";
 
 export default function App(props) {
   const [fetchData, setFetchData] = useState(false);
@@ -51,7 +52,7 @@ export default function App(props) {
       .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
       .then((result) => {
         setMarkers(result.data.rows);
-        setArr(result.data.rows);
+		setArr(result.data.rows);
       })
       .catch((error) => {
         console.error(error);
@@ -315,7 +316,17 @@ export default function App(props) {
         </Router>
       </main>
 
-      <div className={styles.map}>
+        <Loader
+		  className ={styles.loader}
+          type="Oval"
+          color="#00BFFF"
+          height={"10rem"}
+          width={"10rem"}
+          timeout={1000000}
+		  visible={(markers.length === 0) ? true : false}
+        />
+
+      <div className={(markers.length === 0) ? styles.mapBlured : styles.map}>
         <GoogleMapReact
           center={center}
           bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API }}
