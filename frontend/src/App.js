@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-
+import { useEffect, useState } from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./components/Marker";
 import axios from "axios";
@@ -11,60 +11,75 @@ import Registration from "./components/Registration";
 import StationInfo from "./components/StationInfo";
 import Profile from "./components/Profile";
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      userHistory: [],
-      message: "",
-      isLoggedIn: false,
-      idUser: null,
-      username: "",
-      password: "",
-      data: [],
-      token: "",
-      currentMarker: {},
-      center: {
-        lat: 65.01,
-        lng: 25.49,
-      },
-      zoom: 13,
-      Markers: [],
-      arr: [],
-      showSearchResults: false,
-      isCharging: false,
-      UUID: "",
-      idCharging: "",
-      noChargerNotification: "",
-      currentCharge: {},
-    };
-  }
+export default function App(props) {
+  const [fetchData, setFetchData] = useState(false);
+  const [userHistory, setUserHistory] = useState([]);
+  const [message, setMessage] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState([]);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [data, setData] = useState([]);
+  const [timer, setTimer] = useState(0);
+  const [token, setToken] = useState([]);
+  const [currentMarker, setCurrentMarker] = useState([]);
+  const [center, setCenter] = useState({
+    lat: 65.01,
+    lng: 25.49,
+  });
+  const [zoom, setZoom] = useState(13);
+  const [markers, setMarkers] = useState([]);
+  const [arr, setArr] = useState([]);
+  const [showSearchResults, setShowSearchResult] = useState(false);
+  const [isCharging, setIsCharging] = useState(false);
+  const [UUID, setUUID] = useState("");
+  const [idCharging, setIdCharging] = useState("");
+  const [noChargerNotification, setNoChargerNotification] = useState("");
+  const [currentCharge, setCurrentCharge] = useState({});
 
-  componentDidMount = () => {
+  useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
       .then((result) => {
-        this.setState({ Markers: result.data.rows });
-        this.setState({ arr: result.data.rows });
+        setMarkers(result.data.rows);
+        setArr(result.data.rows);
       })
       .catch((error) => {
         console.error(error);
       });
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
+      .then((result) => {
+        setMarkers(result.data.rows);
+        setArr(result.data.rows);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [fetchData]);
+
+  useEffect(() => {
+      if (idCharging && isCharging) {
+        const interval = setInterval(() => {
+          refreshData();
+		}, 5000);
+		return () => clearInterval(interval)
+      }
+  }, [idCharging]);
+
+  const logout = () => {
+    stopCharging();
+    setIsLoggedIn(false);
+    setUsername("");
+    setPassword("");
+    setUUID("");
+	setToken("");
+	setMessage("");
   };
 
-  logout = () => {
-    this.stopCharging();
-    this.setState({
-      isLoggedIn: false,
-      username: "",
-      password: "",
-      idUser: null,
-      UUID: "",
-      token: "",
-    });
-  };
-
-  login = (username, password) => {
+  const login = (username, password) => {
     axios
       .post(
         `${process.env.REACT_APP_API_ENDPOINT}/v1/users/login`,
@@ -77,22 +92,18 @@ export default class App extends Component {
         }
       )
       .then(async (response) => {
-        await this.setState({
-          isLoggedIn: true,
-          username: username,
-          password: password,
-          token: response.data.token,
-        });
+        setIsLoggedIn(true);
+        setUsername(username);
+        setPassword(password);
+        setToken(response.data.token);
         this.getUserHistory();
       })
       .catch((error) => {
-        this.setState({
-          message: "Incorrect username or password",
-        });
+        setMessage("Incorrect username or password");
       });
   };
 
-  register = (username, email, password) => {
+  const register = (username, email, password) => {
     axios
       .post(`${process.env.REACT_APP_API_ENDPOINT}/v1/users/register`, {
         username: username,
@@ -100,123 +111,119 @@ export default class App extends Component {
         password: password,
       })
       .then((response) => {
-        this.setState({ message: "Succesfully created" });
+        setMessage("Succesfully created");
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  setMessageToNull = () => this.setState({ message: "" });
-  textInputChange = (value) => {
-    this.setState({
-      arr: this.state.Markers.filter(
+  const setMessageToNull = () => setMessage("");
+  const textInputChange = (value) => {
+    setArr(
+      markers.filter(
         ({ stationName }) =>
           stationName.toLowerCase().indexOf(value.toLowerCase()) >= 0
-      ),
+      )
+    );
+    setCurrentMarker({});
+  };
+
+  const setCurrentStation = (currentStation) => {
+    setCurrentMarker(currentStation);
+    setCenter({
+      lat: currentStation.lat,
+      lng: currentStation.lng,
     });
-    this.setState({ currentMarker: {} });
+    setZoom(16);
   };
 
-  setCurrentStation = async (currentStation) => {
-    await this.setState({
-      currentMarker: currentStation,
-      center: {
-        lat: currentStation.lat,
-        lng: currentStation.lng,
-      },
-      zoom: 16,
-    });
+  const setCurrentStationToNull = () => {
+    setCurrentMarker({});
   };
 
-  setCurrentStationToNull = () => {
-    this.setState({ currentMarker: {} });
-  };
-
-  refreshData = () => {
-	  if(this.state.isCharging){
-
-	  }
-	let frequency = 5;
+  const refreshData = async () => {
     axios
       .put(
-        `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/chargingProcess/${this.state.idCharging}`,
+        `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/chargingProcess/${idCharging}`,
         {},
         {
-          headers: { Authorization: `Bearer ${this.state.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       )
       .then((response) => {
-        console.log("response: ", response);
-        this.setState({ currentCharge: { ...response.data.rows[0] } });
+        setCurrentCharge({ ...response.data.rows[0] });
       })
       .catch();
-    this.getUserHistory();
-    if (this.state.isCharging) {
-      setTimeout(this.refreshData, frequency * 1000);
-    }
+    await getUserHistory();
   };
 
-  getUserHistory = () => {
-    axios
+  const getUserHistory = async () => {
+    await axios
       .get(
         `${process.env.REACT_APP_API_ENDPOINT}/v1/users/history/userHistory`,
         {
-          headers: { Authorization: `Bearer ${this.state.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       )
       .then((response) => {
-        this.setState({ userHistory: response.data.rows });
+        setUserHistory(response.data.rows);
       })
 
       .catch((error) => console.log(error));
   };
 
-  stopCharging = async () => {
-    await this.setState({ isCharging: false });
-    axios
+  const stopCharging = async () => {
+	setIsCharging(false);
+	if(idCharging) {
+   	await axios
       .put(
-        `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/stopCharging/${this.state.idCharging}`,
+        `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/stopCharging/${idCharging}`,
         {},
         {
-          headers: { Authorization: `Bearer ${this.state.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       )
       .then(async (response) => {
-        await this.componentDidMount();
+        setFetchData(!fetchData);
       })
-      .catch((error) => console.log(error));
+	  .catch((error) => console.log(error));
+	}
+	setIdCharging(0);
+
   };
 
-  startCharging = (UUID) => {
+  const startCharging = async (UUID) => {
     if (UUID === "") {
-      UUID = 0;
+	  UUID = 0;
     }
-    axios
+    await axios
       .post(
         `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/startCharging/${UUID}`,
         {},
         {
-          headers: { Authorization: `Bearer ${this.state.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       )
       .then(async (response) => {
-        console.log("response: ", response);
         if (response.data !== false) {
-			console.log('response: ', response);
-          await this.setState({
-            isCharging: true,
-            UUID: UUID,
-            idCharging: response.data.rows[0].id,
-            noChargerNotification: "",
-          });
-          this.refreshData();
-          this.componentDidMount();
+          setIsCharging(true);
+		  setUUID(UUID);
+		  setTimer(1);
+          setIdCharging(response.data.rows[0].id);
+          setNoChargerNotification("");
+		  //   refreshData();
+		  setCurrentCharge({
+			  cost: 0,
+			  timeOfUsage: 0,
+			  energy: 0
+
+		  })
+          setFetchData(!fetchData);
         } else {
-          await this.setState({
-            noChargerNotification:
-              "No charger with such ID or it's taken already",
-          });
+          setNoChargerNotification(
+            "No charger with such ID or it's taken already"
+          );
         }
       })
       .catch((error) => {
@@ -224,117 +231,112 @@ export default class App extends Component {
       });
   };
 
-  _onChildClick = (key, childProps) => {
+  const _onChildClick = (key, childProps) => {
     let marker;
-    this.state.Markers.forEach((e) => {
+    markers.forEach((e) => {
       if (e.stationName === childProps.text) {
         marker = e;
       }
     });
-    this.setState({
-      center: {
-        lat: childProps.lat,
-        lng: childProps.lng,
-      },
-      zoom: 16,
-      currentMarker: marker,
+    setCenter({
+      lat: childProps.lat,
+      lng: childProps.lng,
     });
+    setZoom(16);
+    setCurrentMarker(marker);
   };
-
-  render() {
-    return (
-      <div className={styles.generalGrid}>
-        <main>
-          <Router>
-            <Route
-              path="/station/:id"
-              exact
-              render={(routeProps) => (
-                <StationInfo
-                  {...routeProps}
-                  getInfoAboutStation={this.getInfoAboutStation}
-                />
-              )}
-            />
-            <Route
-              path="/login"
-              exact
-              render={(routeProps) => (
-                <Login
-                  login={this.login}
-                  {...routeProps}
-                  username={this.state.username}
-                  message={this.state.message}
-                  setMessageToNull={this.setMessageToNull}
-                />
-              )}
-            />
-            <Route
-              path="/profile"
-              exact
-              render={(routeProps) => (
-                <Profile userHistory={this.state.userHistory} {...routeProps} />
-              )}
-            />
-            <Route
-              path="/registration"
-              exact
-              render={(routeProps) => (
-                <Registration
-                  {...routeProps}
-                  register={this.register}
-                  message={this.state.message}
-                  setMessageToNull={this.setMessageToNull}
-                />
-              )}
-            />
-            <Route
-              path="/"
-              exact
-              render={(routeProps) => (
-                <MainPage
-                  logout={this.logout}
-                  message={this.state.message}
-                  currentMarker={this.state.currentMarker}
-                  isLoggedIn={this.state.isLoggedIn}
-                  onSearchFilterUpdate={this.textInputChange}
-                  showSearchResults={this.state.showSearchResults}
-                  resultArray={this.state.arr.slice(0, 7)}
-                  setStation={this.setCurrentStation}
-                  setCurrentStationToNull={this.setCurrentStationToNull}
-                  startCharging={this.startCharging}
-                  noChargerNotification={this.state.noChargerNotification}
-                  isCharging={this.state.isCharging}
-                  UUID={this.state.UUID}
-                  idCharging={this.state.idCharging}
-                  currentCharge={this.state.currentCharge}
-                  stopCharging={this.stopCharging}
-                />
-              )}
-            />
-          </Router>
-        </main>
-
-        <div className={styles.map}>
-          <GoogleMapReact
-            center={this.state.center}
-            bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API }}
-            zoom={this.state.zoom}
-            onChildClick={this._onChildClick}
-          >
-            {this.state.Markers.map((item, i) => (
-              <Marker
-                key={i}
-                lat={item.lat}
-                lng={item.lng}
-                isTaken={item.isTaken}
-                type={item.type}
-                text={item.stationName}
+  return (
+    <div className={styles.generalGrid}>
+      <main>
+        <Router>
+          <Route
+            path="/station/:id"
+            exact
+            render={(routeProps) => (
+              <StationInfo
+                {...routeProps}
+                getInfoAboutStation={this.getInfoAboutStation}
               />
-            ))}
-          </GoogleMapReact>
-        </div>
+            )}
+          />
+          <Route
+            path="/login"
+            exact
+            render={(routeProps) => (
+              <Login
+                login={login}
+                {...routeProps}
+                username={username}
+                message={message}
+                setMessageToNull={setMessageToNull}
+              />
+            )}
+          />
+          <Route
+            path="/profile"
+            exact
+            render={(routeProps) => (
+              <Profile userHistory={userHistory} {...routeProps} />
+            )}
+          />
+          <Route
+            path="/registration"
+            exact
+            render={(routeProps) => (
+              <Registration
+                {...routeProps}
+                register={register}
+                message={message}
+                setMessageToNull={setMessageToNull}
+              />
+            )}
+          />
+          <Route
+            path="/"
+            exact
+            render={(routeProps) => (
+              <MainPage
+                logout={logout}
+                message={message}
+                currentMarker={currentMarker}
+                isLoggedIn={isLoggedIn}
+                onSearchFilterUpdate={textInputChange}
+                showSearchResults={showSearchResults}
+                resultArray={arr.slice(0, 7)}
+                setStation={setCurrentStation}
+                setCurrentStationToNull={setCurrentStationToNull}
+                startCharging={startCharging}
+                noChargerNotification={noChargerNotification}
+                isCharging={isCharging}
+                UUID={UUID}
+                idCharging={idCharging}
+                currentCharge={currentCharge}
+                stopCharging={stopCharging}
+              />
+            )}
+          />
+        </Router>
+      </main>
+
+      <div className={styles.map}>
+        <GoogleMapReact
+          center={center}
+          bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API }}
+          zoom={zoom}
+          onChildClick={_onChildClick}
+        >
+          {markers.map((item, i) => (
+            <Marker
+              key={i}
+              lat={item.lat}
+              lng={item.lng}
+              isTaken={item.isTaken}
+              type={item.type}
+              text={item.stationName}
+            />
+          ))}
+        </GoogleMapReact>
       </div>
-    );
-  }
+    </div>
+  );
 }

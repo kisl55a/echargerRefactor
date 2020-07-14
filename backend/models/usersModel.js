@@ -36,9 +36,7 @@ var user = {
             .notNullable()
             .references("stationId")
             .inTable("stations");
-          t.dateTime("timeOfStart")
-            .notNullable()
-            .defaultTo(knex.raw("CURRENT_TIMESTAMP"));
+          t.dateTime("timeOfStart").notNullable();
           t.integer("timeOfUsage", 10).notNullable();
           t.float("cost", 10, 3).notNullable();
           t.float("energy", 10, 3).notNullable();
