@@ -17,10 +17,9 @@ export default function App(props) {
   const [message, setMessage] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState([]);
   const [username, setUsername] = useState("");
+  // eslint-disable-next-line
   const [password, setPassword] = useState("");
-  const [data, setData] = useState([]);
-  const [timer, setTimer] = useState(0);
-  const [token, setToken] = useState([]);
+  const [token, setToken] = useState("");
   const [currentMarker, setCurrentMarker] = useState([]);
   const [center, setCenter] = useState({
     lat: 65.01,
@@ -29,7 +28,6 @@ export default function App(props) {
   const [zoom, setZoom] = useState(13);
   const [markers, setMarkers] = useState([]);
   const [arr, setArr] = useState([]);
-  const [showSearchResults, setShowSearchResult] = useState(false);
   const [isCharging, setIsCharging] = useState(false);
   const [UUID, setUUID] = useState("");
   const [idCharging, setIdCharging] = useState("");
@@ -58,15 +56,20 @@ export default function App(props) {
       .catch((error) => {
         console.error(error);
       });
-  }, [fetchData]);
+    if (token !== "") {
+      getUserHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData, token]);
 
   useEffect(() => {
-      if (idCharging && isCharging) {
-        const interval = setInterval(() => {
-          refreshData();
-		}, 5000);
-		return () => clearInterval(interval)
-      }
+    if (idCharging && isCharging) {
+      const interval = setInterval(() => {
+        refreshData();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idCharging]);
 
   const logout = () => {
@@ -75,8 +78,8 @@ export default function App(props) {
     setUsername("");
     setPassword("");
     setUUID("");
-	setToken("");
-	setMessage("");
+    setToken("");
+    setMessage("");
   };
 
   const login = (username, password) => {
@@ -96,7 +99,6 @@ export default function App(props) {
         setUsername(username);
         setPassword(password);
         setToken(response.data.token);
-        this.getUserHistory();
       })
       .catch((error) => {
         setMessage("Incorrect username or password");
@@ -174,28 +176,27 @@ export default function App(props) {
   };
 
   const stopCharging = async () => {
-	setIsCharging(false);
-	if(idCharging) {
-   	await axios
-      .put(
-        `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/stopCharging/${idCharging}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      .then(async (response) => {
-        setFetchData(!fetchData);
-      })
-	  .catch((error) => console.log(error));
-	}
-	setIdCharging(0);
-
+    setIsCharging(false);
+    if (idCharging) {
+      await axios
+        .put(
+          `${process.env.REACT_APP_API_ENDPOINT}/v1/stations/stopCharging/${idCharging}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then(async (response) => {
+          setFetchData(!fetchData);
+        })
+        .catch((error) => console.log(error));
+    }
+    setIdCharging(0);
   };
 
   const startCharging = async (UUID) => {
     if (UUID === "") {
-	  UUID = 0;
+      UUID = 0;
     }
     await axios
       .post(
@@ -208,17 +209,14 @@ export default function App(props) {
       .then(async (response) => {
         if (response.data !== false) {
           setIsCharging(true);
-		  setUUID(UUID);
-		  setTimer(1);
+          setUUID(UUID);
           setIdCharging(response.data.rows[0].id);
           setNoChargerNotification("");
-		  //   refreshData();
-		  setCurrentCharge({
-			  cost: 0,
-			  timeOfUsage: 0,
-			  energy: 0
-
-		  })
+          setCurrentCharge({
+            cost: 0,
+            timeOfUsage: 0,
+            energy: 0,
+          });
           setFetchData(!fetchData);
         } else {
           setNoChargerNotification(
@@ -301,7 +299,6 @@ export default function App(props) {
                 currentMarker={currentMarker}
                 isLoggedIn={isLoggedIn}
                 onSearchFilterUpdate={textInputChange}
-                showSearchResults={showSearchResults}
                 resultArray={arr.slice(0, 7)}
                 setStation={setCurrentStation}
                 setCurrentStationToNull={setCurrentStationToNull}
