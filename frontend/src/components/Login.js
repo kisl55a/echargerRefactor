@@ -17,7 +17,7 @@ export default function Login(props) {
   }
 
   return (
-    // eslint-disable-next-line 
+    // eslint-disable-next-line
     <div className={styles.generalGrid, styles.registration}>
       <h2> Login </h2>
       <form onSubmit={login}>

@@ -11,6 +11,7 @@ import Registration from "./components/Registration";
 import StationInfo from "./components/StationInfo";
 import Profile from "./components/Profile";
 import Loader from "react-loader-spinner";
+import { useAlert } from "react-alert";
 
 export default function App(props) {
   const [fetchData, setFetchData] = useState(false);
@@ -34,6 +35,7 @@ export default function App(props) {
   const [idCharging, setIdCharging] = useState("");
   const [noChargerNotification, setNoChargerNotification] = useState("");
   const [currentCharge, setCurrentCharge] = useState({});
+  const alert = useAlert();
 
   useEffect(() => {
     axios
@@ -52,7 +54,7 @@ export default function App(props) {
       .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
       .then((result) => {
         setMarkers(result.data.rows);
-		setArr(result.data.rows);
+        setArr(result.data.rows);
       })
       .catch((error) => {
         console.error(error);
@@ -100,9 +102,14 @@ export default function App(props) {
         setUsername(username);
         setPassword(password);
         setToken(response.data.token);
+        alert.success("Succesfully logged in", {
+          timeout: 3000, // custom timeout just for this one alert
+        });
       })
       .catch((error) => {
-        setMessage("Incorrect username or password");
+        alert.error("Incorrect username or password", {
+          timeout: 3000, // custom timeout just for this one alert
+        });
       });
   };
 
@@ -114,10 +121,14 @@ export default function App(props) {
         password: password,
       })
       .then((response) => {
-        setMessage("Succesfully created");
+        alert.success("Succesfully created", {
+          timeout: 3000, // custom timeout just for this one alert
+        });
       })
       .catch((error) => {
-        console.log(error);
+        alert.error("An error occured", {
+          timeout: 3000, // custom timeout just for this one alert
+        });
       });
   };
 
@@ -189,6 +200,9 @@ export default function App(props) {
         )
         .then(async (response) => {
           setFetchData(!fetchData);
+          alert.info("Stopped charging", {
+            timeout: 3000, // custom timeout just for this one alert
+          });
         })
         .catch((error) => console.log(error));
     }
@@ -219,13 +233,19 @@ export default function App(props) {
             energy: 0,
           });
           setFetchData(!fetchData);
+          alert.success("Started charging", {
+            timeout: 3000, // custom timeout just for this one alert
+          });
         } else {
-          setNoChargerNotification(
-            "No charger with such ID or it's taken already"
-          );
+          alert.info("No charger with such ID or it's taken already", {
+            timeout: 6000, // custom timeout just for this one alert
+          });
         }
       })
       .catch((error) => {
+		alert.info("No charger with such ID or it's taken already", {
+            timeout: 3000, // custom timeout just for this one alert
+          });
         console.error(error);
       });
   };
@@ -316,17 +336,17 @@ export default function App(props) {
         </Router>
       </main>
 
-        <Loader
-		  className ={styles.loader}
-          type="Oval"
-          color="#00BFFF"
-          height={"10rem"}
-          width={"10rem"}
-          timeout={1000000}
-		  visible={(markers.length === 0) ? true : false}
-        />
+      <Loader
+        className={styles.loader}
+        type="Oval"
+        color="#00BFFF"
+        height={"10rem"}
+        width={"10rem"}
+        timeout={1000000}
+        visible={markers.length === 0 ? true : false}
+      />
 
-      <div className={(markers.length === 0) ? styles.mapBlured : styles.map}>
+      <div className={markers.length === 0 ? styles.mapBlured : styles.map}>
         <GoogleMapReact
           center={center}
           bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API }}
