@@ -7,7 +7,7 @@ export default function Profile(props) {
     event.preventDefault();
     props.history.goBack();
   }
-
+console.log(props.userHistory);
   return (
     <div>
       {(props.userHistory.length !== 0) ?
@@ -20,12 +20,12 @@ export default function Profile(props) {
             <th>Cost(EUR)</th>
           </tr>
           <tbody>
-            {props.userHistory.map((item, i) => (
+            {props.userHistory.filter(el => el.timeOfUsage !== 0).map((item, i) => (
               <HistoryRow key={i} {...item} />
             ))}
           </tbody>
         </table>
-        : " You have no charges"
+        : "You have no charges"
       }
       <button className={styles.cancelButton} onClick={cancel}>Back</button>
       <div id="message" className={styles.hidden}> {props.message} </div>
