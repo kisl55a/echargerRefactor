@@ -1,5 +1,5 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 let station = require("../models/stationsModel");
 const jwtStrategy = require("../middlewares/passportJWT");
 
@@ -22,7 +22,7 @@ router.post("/insertData", function (req, res, next) {
       res.status(202).json({ code: 1, rows });
     },
     catch: (err) => {
-      res.status(202).json({ code: 1, err });
+      res.status(500).json({ code: 0, err });
     },
   });
 });

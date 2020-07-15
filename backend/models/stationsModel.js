@@ -1,7 +1,7 @@
-var knex = require("../database/database");
+const knex = require("../database/database");
 const { data } = require("../database/data");
 
-var station = {
+const station = {
   getAllStations: async function (callback) {
     return knex("stations")
       .select()
@@ -16,12 +16,15 @@ var station = {
         .insert(data)
         .then((res) => callback.then(res))
         .catch((err) => callback.catch(err));
+    } else {
+      callback.catch("Data is already present");
     }
   },
   startCharging: async function (UUID, userId, callback) {
     let stationInfo = await knex("stations")
       .select("stationId", "measure", "isTaken")
-      .where("UUID", UUID);
+      .where("UUID", UUID)
+      .catch((err) => console.log(err));
     if (stationInfo.length != 0 && stationInfo[0].isTaken == 0) {
       await knex("charging").insert({
         stationId: stationInfo[0].stationId,
@@ -34,7 +37,8 @@ var station = {
       });
       await knex("stations")
         .update("isTaken", 1)
-        .where("stationId", stationInfo[0].stationId);
+        .where("stationId", stationInfo[0].stationId)
+        .catch((err) => console.log(err));
       return knex("charging")
         .max("idCharging", { as: "id" })
         .then((data) => callback.then(data))
@@ -48,7 +52,9 @@ var station = {
       .select("charging.stationId", "charging.idUser")
       .from("charging")
       .innerJoin("stations", "charging.stationId", "stations.stationId")
-      .where("idCharging", idCharging);
+      .where("idCharging", idCharging)
+      .catch((err) => console.log(err));
+
     if (station[0].idUser == idUser) {
       return knex("stations")
         .update("isTaken", 0)
@@ -72,7 +78,8 @@ var station = {
         )
       )
       .innerJoin("stations", "charging.stationId", "stations.stationId")
-      .where("idCharging", idCharging);
+      .where("idCharging", idCharging)
+      .catch((err) => console.log(err));
     if (chargingInfo[0].type == "Fast") {
       let currentCost =
         (chargingInfo[0].time / 60) *
@@ -84,7 +91,8 @@ var station = {
           timeOfUsage: chargingInfo[0].time,
           energy: (chargingInfo[0].time / 60) * chargingInfo[0].power,
         })
-        .where("idCharging", idCharging);
+        .where("idCharging", idCharging)
+        .catch((err) => console.log(err));
     } else {
       let currentCost = chargingInfo[0].time * chargingInfo[0].price;
       await knex("charging")
@@ -93,7 +101,8 @@ var station = {
           timeOfUsage: chargingInfo[0].time,
           energy: (chargingInfo[0].time / 60) * chargingInfo[0].power,
         })
-        .where("idCharging", idCharging);
+        .where("idCharging", idCharging)
+        .catch((err) => console.log(err));
     }
     return await knex("charging")
       .select("cost", "timeOfUsage", "energy")

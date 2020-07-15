@@ -16,7 +16,7 @@ export default function App(props) {
   const [fetchData, setFetchData] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
   const [message, setMessage] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   // eslint-disable-next-line
   const [password, setPassword] = useState("");

@@ -1,6 +1,6 @@
-var express = require("express");
-var router = express.Router();
-var user = require("../models/usersModel");
+const express = require("express");
+const router = express.Router();
+const user = require("../models/usersModel");
 const jwtStrategy = require("../middlewares/passportJWT");
 const basicStrategy = require("../middlewares/passportBasic");
 const jwt = require("jsonwebtoken");
@@ -8,9 +8,13 @@ const jwtSecretKey = require("../secretKey.json");
 
 // Create tables
 
-(async () => await user.createTableUsers())();
-(async () => await user.createTableStations())();
-(async () => await user.createTableCharging())();
+(async () => await user.createTableUsers())().catch((err) => console.log(err));
+(async () => await user.createTableStations())().catch((err) =>
+  console.log(err)
+);
+(async () => await user.createTableCharging())().catch((err) =>
+  console.log(err)
+);
 
 router.get("/:id?", function (req, res, next) {
   if (req.params.id) {

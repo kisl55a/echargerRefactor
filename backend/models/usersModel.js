@@ -1,25 +1,22 @@
-var knex = require("../database/database");
+const knex = require("../database/database");
 const passwordHash = require("password-hash");
-var user = {
+const user = {
   createTableUsers: async () => {
-    await knex.schema.hasTable("users").then(function (exists) {
-      if (!exists) {
-        return knex.schema.createTable("users", function (t) {
-          t.increments("idUser").primary();
-          t.string("username", 255).unique();
-          t.string("email", 255);
-          t.string("password", 255);
-          t.dateTime("created_at")
-            .notNullable()
-            .defaultTo(knex.raw("CURRENT_TIMESTAMP"));
-          t.dateTime("updated_at").defaultTo(
-            knex.raw("NULL ON UPDATE CURRENT_TIMESTAMP")
-          );
-        });
-      } else {
-        return null;
-      }
-    });
+    await knex.schema
+      .hasTable("users")
+      .then(function (exists) {
+        if (!exists) {
+          return knex.schema.createTable("users", function (t) {
+            t.increments("idUser").primary();
+            t.string("username", 255).unique();
+            t.string("email", 255);
+            t.string("password", 255);
+          });
+        } else {
+          return null;
+        }
+      })
+      .catch((err) => console.log(err));
   },
   createTableCharging: async () => {
     await knex.schema.hasTable("charging").then(function (exists) {
@@ -48,25 +45,28 @@ var user = {
     });
   },
   createTableStations: async () => {
-    await knex.schema.hasTable("stations").then(function (exists) {
-      if (!exists) {
-        return knex.schema.createTable("stations", function (t) {
-          t.increments("stationId").primary();
-          t.string("stationName", 100).notNullable();
-          t.string("address", 100).notNullable();
-          t.float("lat", 50, 5).notNullable();
-          t.float("lng", 50, 5).notNullable();
-          t.string("type", 40).notNullable();
-          t.float("power", 10, 5).notNullable();
-          t.float("price", 10, 3).notNullable();
-          t.string("measure", 10).notNullable();
-          t.boolean("isTaken").defaultTo(false);
-          t.string("UUID", 4).notNullable();
-        });
-      } else {
-        return null;
-      }
-    });
+    await knex.schema
+      .hasTable("stations")
+      .then(function (exists) {
+        if (!exists) {
+          return knex.schema.createTable("stations", function (t) {
+            t.increments("stationId").primary();
+            t.string("stationName", 100).notNullable();
+            t.string("address", 100).notNullable();
+            t.float("lat", 50, 5).notNullable();
+            t.float("lng", 50, 5).notNullable();
+            t.string("type", 40).notNullable();
+            t.float("power", 10, 5).notNullable();
+            t.float("price", 10, 3).notNullable();
+            t.string("measure", 10).notNullable();
+            t.boolean("isTaken").defaultTo(false);
+            t.string("UUID", 4).notNullable();
+          });
+        } else {
+          return null;
+        }
+      })
+      .catch((err) => console.log(err));
   },
   getUserByName: async function (username, callback) {
     return knex
@@ -108,7 +108,6 @@ var user = {
   },
 
   history: async function (idUser, callback) {
-    console.log("idUser: ", idUser);
     return knex()
       .select(
         "charging.idCharging",
