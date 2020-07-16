@@ -29,7 +29,7 @@ export default function Charging(props) {
           <div>
             Enter the Identifier
       </div>
-          <input type="text" name="identifier" />
+          <input type="text" name="identifier" maxLength="4" style={{ textTransform: 'uppercase'}}/>
           <button type='submit' className={styles.buttonGreen}> Start charging</button>
         </form>
       }
