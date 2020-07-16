@@ -21,7 +21,7 @@ export default function Register(props) {
       });
     } else if (
       !validateEmail(event.target["email"].value) ||
-      event.target["username"].value.trim == ""
+      event.target["username"].value.trim === ""
     ) {
       alert.error("Invalid email or username", {
         timeout: 3000, // custom timeout just for this one alert
