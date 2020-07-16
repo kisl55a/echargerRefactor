@@ -16,7 +16,6 @@ import { useAlert } from "react-alert";
 export default function App(props) {
   const [fetchData, setFetchData] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
-  const [message, setMessage] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   // eslint-disable-next-line
@@ -29,14 +28,16 @@ export default function App(props) {
   });
   const [zoom, setZoom] = useState(13);
   const [markers, setMarkers] = useState([]);
+//   This is a duplicate of markers. Its aim to
+//   show the data in the sidebar
   const [arr, setArr] = useState([]);
   const [isCharging, setIsCharging] = useState(false);
   const [UUID, setUUID] = useState("");
   const [idCharging, setIdCharging] = useState("");
-  const [noChargerNotification, setNoChargerNotification] = useState("");
   const [currentCharge, setCurrentCharge] = useState({});
   const alert = useAlert();
 
+// Gets all stations data
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
@@ -49,6 +50,7 @@ export default function App(props) {
       });
   }, []);
 
+// Fetchs the server to update data when needed
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_ENDPOINT}/v1/stations/getAllStations`)
@@ -65,6 +67,7 @@ export default function App(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData, token]);
 
+// Charghing process timer that sends requests every 5 secs
   useEffect(() => {
     if (idCharging && isCharging) {
       const interval = setInterval(() => {
@@ -75,6 +78,7 @@ export default function App(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idCharging]);
 
+// Logout function
   const logout = () => {
     stopCharging();
     setIsLoggedIn(false);
@@ -82,9 +86,9 @@ export default function App(props) {
     setPassword("");
     setUUID("");
     setToken("");
-    setMessage("");
   };
 
+// Login function
   const login = (username, password) => {
     axios
       .post(
@@ -113,6 +117,7 @@ export default function App(props) {
       });
   };
 
+// Register function
   const register = (username, email, password) => {
     axios
       .post(`${process.env.REACT_APP_API_ENDPOINT}/v1/users/register`, {
@@ -121,18 +126,19 @@ export default function App(props) {
         password: password,
       })
       .then((response) => {
+		  console.log('response: ', response);
         alert.success("Succesfully created", {
           timeout: 3000, // custom timeout just for this one alert
-        });
+		});
+		return true;
       })
       .catch((error) => {
+		  console.log('error: ', error);
         alert.error("An error occured", {
           timeout: 3000, // custom timeout just for this one alert
         });
       });
   };
-
-  const setMessageToNull = () => setMessage("");
   const textInputChange = (value) => {
     setArr(
       markers.filter(
@@ -143,6 +149,7 @@ export default function App(props) {
     setCurrentMarker({});
   };
 
+// Function sets the maps coordinates to the chosen station
   const setCurrentStation = (currentStation) => {
     setCurrentMarker(currentStation);
     setCenter({
@@ -152,10 +159,12 @@ export default function App(props) {
     setZoom(16);
   };
 
+  // Sets current station to null
   const setCurrentStationToNull = () => {
     setCurrentMarker({});
   };
 
+  // Function refetches the data of current charging
   const refreshData = async () => {
     axios
       .put(
@@ -172,6 +181,7 @@ export default function App(props) {
     await getUserHistory();
   };
 
+// Function fetchs user's history
   const getUserHistory = async () => {
     await axios
       .get(
@@ -187,6 +197,7 @@ export default function App(props) {
       .catch((error) => console.log(error));
   };
 
+  // Function stops charging process
   const stopCharging = async () => {
     setIsCharging(false);
     if (idCharging) {
@@ -209,6 +220,7 @@ export default function App(props) {
     setIdCharging(0);
   };
 
+//   Function starts charging process
   const startCharging = async (UUID) => {
     if (UUID === "") {
       UUID = 0;
@@ -226,7 +238,6 @@ export default function App(props) {
           setIsCharging(true);
           setUUID(UUID);
           setIdCharging(response.data.rows[0].id);
-          setNoChargerNotification("");
           setCurrentCharge({
             cost: 0,
             timeOfUsage: 0,
@@ -250,6 +261,7 @@ export default function App(props) {
       });
   };
 
+// Function gets the info about clicked station
   const _onChildClick = (key, childProps) => {
     let marker;
     markers.forEach((e) => {
@@ -286,8 +298,6 @@ export default function App(props) {
                 login={login}
                 {...routeProps}
                 username={username}
-                message={message}
-                setMessageToNull={setMessageToNull}
               />
             )}
           />
@@ -305,8 +315,6 @@ export default function App(props) {
               <Registration
                 {...routeProps}
                 register={register}
-                message={message}
-                setMessageToNull={setMessageToNull}
               />
             )}
           />
@@ -316,7 +324,6 @@ export default function App(props) {
             render={(routeProps) => (
               <MainPage
                 logout={logout}
-                message={message}
                 currentMarker={currentMarker}
                 isLoggedIn={isLoggedIn}
                 onSearchFilterUpdate={textInputChange}
@@ -324,7 +331,6 @@ export default function App(props) {
                 setStation={setCurrentStation}
                 setCurrentStationToNull={setCurrentStationToNull}
                 startCharging={startCharging}
-                noChargerNotification={noChargerNotification}
                 isCharging={isCharging}
                 UUID={UUID}
                 idCharging={idCharging}

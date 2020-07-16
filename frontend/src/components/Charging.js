@@ -29,7 +29,6 @@ export default function Charging(props) {
           <div>
             Enter the Identifier
       </div>
-          <div> {props.noChargerNotification}</div>
           <input type="text" name="identifier" />
           <button type='submit' className={styles.buttonGreen}> Start charging</button>
         </form>

@@ -54,7 +54,6 @@ export default function MainPage(props) {
         {(props.isLoggedIn)
           ? <Charging
             startCharging={props.startCharging}
-            noChargerNotification={props.noChargerNotification}
             isCharging={props.isCharging}
             idCharging={props.idCharging}
             UUID={props.UUID}
